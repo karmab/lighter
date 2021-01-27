@@ -5,8 +5,6 @@ matching some of the hardware data they send to identify themselves, such as:
 - ip
 - fqdn
 
-
-
 ```
 curl -X POST -H "Content-Type: application/json"  -d "{\"mac\": \"XXX\"}" 127.0.0.1:9000
 ```
