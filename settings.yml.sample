@@ -1,0 +1,4 @@
+rule1:
+  match: mac
+  value: YYY
+  mcp: http://127.0.0.1:22624/config/yyy

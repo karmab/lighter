@@ -3,11 +3,23 @@
 
 from flask import Flask, request, jsonify
 import os
+import re
+import yaml
 
 
 def decisionmaker(form):
-    print(form)
-    return "proutos"
+    result = None
+    for key1 in form:
+        for key2 in settings:
+            rule = settings[key2]
+            if rule.get('match', 'fqdn') == key1 and re.match(rule['value'], form[key1]):
+                print("Matching for %s" % key1)
+                if 'mcp' in rule:
+                    result = rule['mcp']
+                    break
+                else:
+                    print("Missing mcp for %s" % key1)
+    return result
 
 
 app = Flask(__name__)
@@ -18,7 +30,15 @@ except ImportError:
     config = {'PORT': os.environ.get('PORT', 9000)}
 
 debug = config['DEBUG'] if 'DEBUG' in list(config) else False
-port = int(config['PORT']) if 'PORT'in list(config) else 9000
+port = int(config['PORT']) if 'PORT' in list(config) else 9000
+config_dir = '/config' if 'KUBERNETES_PORT' in os.environ else '.'
+
+with open("%s/settings.yml" % config_dir) as f:
+    try:
+        settings = yaml.safe_load(f)
+    except Exception as e:
+        print("Hit %s when reading settings.yml file" % e)
+        os._exit(1)
 
 
 @app.route('/', methods=['POST'])
