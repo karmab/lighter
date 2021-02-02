@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lighter
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: lighter
+  name: configmap-reader
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-configmap
+  namespace: lighter
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: lighter
+roleRef:
+  kind: Role
+  name: configmap-reader
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lighter
+  namespace: lighter
+  labels:
+    app: lighter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lighter
+  template:
+    metadata:
+      labels:
+        app: lighter
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      containers:
+      - name: lighter
+        image: quay.io/karmab/lighter:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lighter-service
+  namespace: lighter
+spec:
+  selector:
+    app: lighter
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  type: LoadBalancer

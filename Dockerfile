@@ -1,12 +1,19 @@
-FROM centos:8
+FROM alpine:3.10
+
 MAINTAINER Karim Boumedhel <karimboumedhel@gmail.com>
+
+LABEL name="karmab/ligher" \
+      maintainer="karimboumedhel@gmail.com" \
+      vendor="Karmalabs" \
+      version="latest" \
+      release="0" \
+      summary="Evaluate which ignition a node should use" \
+      description="Evaluate which ignition a node should use"
 
 EXPOSE 9000
 
-RUN yum -y install epel-release && yum -y install python-pip && yum clean all && rm -rf /var/cache/yum
-RUN pip install flask
-ADD main.py /tmp
-# COPY templates /tmp/templates
-# COPY static /tmp/static
+RUN apk add python3 gcc musl-dev python3-dev
+RUN pip3 install flask kubernetes
+ADD main.py /
 
-ENTRYPOINT  ["python", "/tmp/main.py"]
+ENTRYPOINT  ["python3", "-u", "/main.py"]

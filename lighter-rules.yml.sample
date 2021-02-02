@@ -1,0 +1,8 @@
+rule1:
+  match: mac
+  value: YYY
+  return: http://127.0.0.1:22624/config/yyy
+rule2:
+  match: mac
+  value: ZZZ
+  return: http://127.0.0.1:22624/config/zzz
