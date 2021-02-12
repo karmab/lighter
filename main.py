@@ -8,6 +8,8 @@ import re
 import threading
 import yaml
 
+SAMPLEIGNITION = """{"ignition":{"config":{},"version":"3.1.0"},"networkd":{},"passwd":{"users":[{"name":"core","sshAuthorizedKeys":["ssh-rsaAAAAB3NzaC1yc2EAAAADAQABAAABAQDkn/lJ9kGBAgiqOfMumICTCj/HHok+z1xFx8Eog/+RQiQt9ncVOQLQvub9BLtvmEfCibcN4VDs4rL/MVe1EwonL1fj2BCRVs7uUH81NrajcBs25L/dRVGBrWKcRDRPiCiCl8YDRfT38R6x5qtZOARS9Se+pwmBtTaEbRhRN6H7iU9xhfXqiDdz6TM0YaJz9zl9Bvk9IMUNJoFwbLHDTracU5I2EQsx5q+iXyFkRXYbwCYFcaqJWWJMadgo4IRksig0Jl4bM8/ERTxdNvUpjPnRJICJF8rwPJQIW4sHJSNzUyrkByH/DUeHsO35DN0cAUC73e1lP1dbLiz7VYYIV+/Fkboumedh@vegeta.local"]}]},"storage":{"files":[{"contents":{"source":"data:,trusting-kowalevski%0A","verification":{}},"filesystem":"root","mode":420,"overwrite":true,"path":"/etc/hostname"},{"contents":{"source":"data:text/plain;charset=utf-8;base64,IyEvYmluL3NoCmVjaG8gcm9vdDp1bml4MTIzNCB8IGNocGFzc3dkCg==","verification":{}},"filesystem":"root","mode":448,"path":"/usr/local/bin/first.sh"}]},"systemd":{"units":[{"contents":"[Service]\\nType=oneshot\\nExecStart=/usr/local/bin/first.sh\\n[Install]\\nWantedBy=multi-user.target\\n","enabled":true,"name":"first-boot.service"}]}}"""
+
 
 def watch_configmaps():
     while True:
@@ -95,21 +97,31 @@ debug = config['DEBUG'] if 'DEBUG' in list(config) else False
 port = int(config['PORT']) if 'PORT' in list(config) else 9000
 
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     entry point
     """
-    form = request.get_json()
+    compact = False
+    if request.method == 'POST':
+        form = request.get_json()
+    else:
+        form = {h[0]: h[1] for h in request.headers}
+        compact = True
     data = decisionmaker(form)
     if data is None:
         result = {'result': 'failure', 'reason': "No matching data"}
         response = jsonify(result)
         response.status_code = 400
     else:
-        result = {'result': 'success', 'data': data}
-        response = jsonify(result)
-        response.status_code = 200
+        if compact:
+            print(SAMPLEIGNITION)
+            return SAMPLEIGNITION
+            # return data
+        else:
+            result = {'result': 'success', 'data': data}
+            response = jsonify(result)
+            response.status_code = 200
     return response
 
 
