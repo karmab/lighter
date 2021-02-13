@@ -5,4 +5,4 @@ rule1:
 rule2:
   match: Mac
   value: ZZZ
-  return: http://127.0.0.1:22624/config/zzz
+  return: http://192.168.1.6/prout.ign
