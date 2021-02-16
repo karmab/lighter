@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from kubernetes import client, config, watch
 import os
 import re
@@ -101,26 +101,12 @@ def index():
     """
     entry point
     """
-    compact = False
     if request.method == 'POST':
         form = request.get_json()
     else:
         form = {h[0]: h[1] for h in request.headers}
-        compact = True
     data = decisionmaker(form)
-    if data is None:
-        result = {'result': 'failure', 'reason': "No matching data"}
-        response = jsonify(result)
-        response.status_code = 400
-    else:
-        if compact:
-            data = urlopen(data).read()
-            return data
-        else:
-            result = {'result': 'success', 'data': data}
-            response = jsonify(result)
-            response.status_code = 200
-    return response
+    return urlopen(data).read() if data is not None else ''
 
 
 def run():
