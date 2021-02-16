@@ -6,6 +6,7 @@ from kubernetes import client, config, watch
 import os
 import re
 import threading
+from urllib.request import urlopen
 import yaml
 
 
@@ -95,21 +96,30 @@ debug = config['DEBUG'] if 'DEBUG' in list(config) else False
 port = int(config['PORT']) if 'PORT' in list(config) else 9000
 
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     entry point
     """
-    form = request.get_json()
+    compact = False
+    if request.method == 'POST':
+        form = request.get_json()
+    else:
+        form = {h[0]: h[1] for h in request.headers}
+        compact = True
     data = decisionmaker(form)
     if data is None:
         result = {'result': 'failure', 'reason': "No matching data"}
         response = jsonify(result)
         response.status_code = 400
     else:
-        result = {'result': 'success', 'data': data}
-        response = jsonify(result)
-        response.status_code = 200
+        if compact:
+            data = urlopen(data).read()
+            return data
+        else:
+            result = {'result': 'success', 'data': data}
+            response = jsonify(result)
+            response.status_code = 200
     return response
 
 
