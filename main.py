@@ -113,7 +113,7 @@ def run():
     """
 
     """
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    app.run(host='::', port=port, debug=debug)
 
 
 if __name__ == '__main__':
